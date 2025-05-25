@@ -33,11 +33,9 @@ const MyReservationsPage = () => {
   const [reservations, setReservations] = useState(mockReservations);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // 날짜 필터링
   const formattedSelectedDate = selectedDate.toISOString().split("T")[0];
   const filteredReservations = reservations.filter((r) => r.date === formattedSelectedDate);
 
-  // 취소 가능 여부
   const canCancel = (reservationDate) => {
     const resDate = new Date(reservationDate);
     const now = new Date();
@@ -54,11 +52,11 @@ const MyReservationsPage = () => {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-6">📅 나의 예약 목록</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800 text-center">📋 나의 예약 목록</h2>
 
       {/* 날짜 선택 */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">조회할 날짜 선택</label>
+      <div className="mb-6 flex justify-center">
+        <label className="mr-4 text-sm font-medium text-gray-700">조회할 날짜 선택:</label>
         <DatePicker
           selected={selectedDate}
           onChange={(date) => setSelectedDate(date)}
@@ -68,21 +66,25 @@ const MyReservationsPage = () => {
       </div>
 
       {filteredReservations.length === 0 ? (
-        <p className="text-gray-600">해당 날짜에 예약 내역이 없습니다.</p>
+        <p className="text-center text-gray-500">해당 날짜에 예약 내역이 없습니다.</p>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredReservations.map((res) => (
-            <div key={res.id} className="p-4 border rounded bg-white shadow-sm">
-              <p>🪑 테이블: {res.tableId} ({res.location}, {res.capacity}명)</p>
-              <p>📅 날짜: {res.date} | {res.time === "lunch" ? "점심" : "저녁"}</p>
+            <div key={res.id} className="p-5 bg-white rounded-lg shadow border">
+              <h3 className="text-lg font-bold text-gray-800 mb-2">🪑 테이블 {res.tableId}</h3>
+              <div className="text-sm text-gray-600 space-y-1 mb-3">
+                <p>📍 위치: <span className="font-medium">{res.location}</span></p>
+                <p>👥 수용 인원: <span className="font-medium">{res.capacity}명</span></p>
+                <p>📅 날짜: <span className="font-medium">{res.date}</span></p>
+                <p>⏰ 시간대: <span className="font-medium">{res.time === "lunch" ? "점심" : "저녁"}</span></p>
+              </div>
               <button
                 disabled={!canCancel(res.date)}
                 onClick={() => handleCancel(res.id)}
-                className={`mt-2 px-4 py-1 rounded ${
-                  canCancel(res.date)
+                className={`w-full py-2 rounded font-semibold transition-colors
+                  ${canCancel(res.date)
                     ? "bg-red-500 text-white hover:bg-red-600"
-                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
-                }`}
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"}`}
               >
                 예약 취소
               </button>
