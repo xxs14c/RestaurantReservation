@@ -1,37 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
-const mockReservations = [
-  {
-    id: 1,
-    date: "2025-06-10",
-    time: "lunch",
-    tableId: 3,
-    location: "룸",
-    capacity: 4,
-  },
-  {
-    id: 2,
-    date: "2025-05-22",
-    time: "dinner",
-    tableId: 1,
-    location: "창가",
-    capacity: 2,
-  },
-  {
-    id: 3,
-    date: "2025-05-23",
-    time: "lunch",
-    tableId: 2,
-    location: "내부",
-    capacity: 6,
-  },
-];
-
 const MyReservationsPage = () => {
-  const [reservations, setReservations] = useState(mockReservations);
+  const [reservations, setReservations] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // ✅ 예약 데이터 불러오기
+  useEffect(() => {
+    const fetchReservations = async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:5000/reservation/my_reservations", {
+          method: "GET",
+          credentials: "include", // 🔐 세션 로그인 상태 유지
+        });
+
+        const data = await res.json();
+        setReservations(data);
+      } catch (error) {
+        console.error("예약 목록 불러오기 실패:", error);
+        alert("예약 데이터를 불러오지 못했습니다.");
+      }
+    };
+
+    fetchReservations();
+  }, []);
 
   const formattedSelectedDate = selectedDate.toISOString().split("T")[0];
   const filteredReservations = reservations.filter((r) => r.date === formattedSelectedDate);
@@ -39,14 +32,34 @@ const MyReservationsPage = () => {
   const canCancel = (reservationDate) => {
     const resDate = new Date(reservationDate);
     const now = new Date();
-    const diff = (resDate - now) / (1000 * 60 * 60 * 24);
-    return diff >= 1;
+    return (resDate - now) / (1000 * 60 * 60 * 24) >= 1;
   };
 
-  const handleCancel = (id) => {
-    if (window.confirm("정말 예약을 취소하시겠습니까?")) {
-      setReservations((prev) => prev.filter((r) => r.id !== id));
-      alert("예약이 취소되었습니다.");
+  // ✅ 예약 취소 처리
+  const handleCancel = async (id) => {
+    if (!window.confirm("정말 예약을 취소하시겠습니까?")) return;
+
+    try {
+      const res = await fetch("http://127.0.0.1:5000/reservation/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // 🔐 세션 인증 필요
+        body: JSON.stringify({ reservation_id: id }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setReservations((prev) => prev.filter((r) => r.id !== id));
+        alert(data.message || "예약이 취소되었습니다.");
+      } else {
+        alert(data.error || "취소 실패");
+      }
+    } catch (error) {
+      console.error("예약 취소 실패:", error);
+      alert("서버 오류로 예약 취소에 실패했습니다.");
     }
   };
 
@@ -70,8 +83,8 @@ const MyReservationsPage = () => {
         <div className="space-y-4">
           {filteredReservations.map((res) => (
             <div key={res.id} className="p-4 border rounded bg-white shadow-sm">
-              <p>🪑 테이블: {res.tableId} ({res.location}, {res.capacity}명)</p>
-              <p>📅 날짜: {res.date} | {res.time === "lunch" ? "점심" : "저녁"}</p>
+              <p>🪑 테이블: {res.table} | 인원: {res.guest_count}명</p>
+              <p>📅 날짜: {res.date} | {res.time_slot === "lunch" ? "점심" : "저녁"}</p>
               <button
                 disabled={!canCancel(res.date)}
                 onClick={() => handleCancel(res.id)}

@@ -15,11 +15,44 @@ const ReservationForm = () => {
     );
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert("🎉 예약이 완료되었습니다!");
-    navigate("/home");
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+
+  const reservation = {
+    name: formData.get("name"),
+    phone: formData.get("phone"),
+    credit_card: formData.get("credit_card"),
+    guest_count: Number(formData.get("guest_count")),
+    table_id: table.id,
+    date: new Date().toISOString().split("T")[0], // 예시로 오늘 날짜
+    time_slot: "lunch", // 예시로 고정 (혹은 state로 받아와야 정확)
   };
+
+  try {
+    const res = await fetch("http://127.0.0.1:5000/reservation/reserve", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include", // 세션 인증 유지
+      body: JSON.stringify(reservation),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert("🎉 예약 완료: " + data.message);
+      navigate("/home");
+    } else {
+      alert("❌ " + (data.error || "예약 실패"));
+    }
+  } catch (err) {
+    console.error("예약 실패:", err);
+    alert("❌ 서버 오류");
+  }
+};
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
@@ -29,24 +62,28 @@ const ReservationForm = () => {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
-          type="text"
+          name="name"
+          type="text" 
           className="w-full border p-2 rounded"
           placeholder="이름"
           required
         />
         <input
+          name="phone"
           type="tel"
           className="w-full border p-2 rounded"
           placeholder="전화번호"
           required
         />
         <input
+          name="credit_card"
           type="text"
           className="w-full border p-2 rounded"
           placeholder="신용카드 번호"
           required
         />
         <input
+          name="guest_count"
           type="number"
           className="w-full border p-2 rounded"
           placeholder="인원 수"

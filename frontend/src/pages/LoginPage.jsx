@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
@@ -6,16 +6,33 @@ const LoginPage = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const [username, setUsername] = useState(""); // ✅ 이메일 → username
+  const [password, setPassword] = useState("");
+
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    // 목데이터. 수정필요요
-    const mockUser = {
-      name: "홍길동",
-    };
+    try {
+      const res = await fetch("http://127.0.0.1:5000/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
 
-    login(mockUser);
-    navigate("/home");
+      const data = await res.json();
+
+      if (res.ok) {
+        login({ name: username });
+        navigate("/home");
+      } else {
+        alert("❌ " + (data.error || "로그인 실패"));
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      alert("❌ 서버 오류 발생");
+    }
   };
 
   return (
@@ -25,11 +42,13 @@ const LoginPage = () => {
 
         <form className="space-y-4" onSubmit={handleLogin}>
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-600">이메일</label>
+            <label className="block mb-1 text-sm font-medium text-gray-600">아이디</label>
             <input
-              type="email"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="이메일을 입력하세요"
+              placeholder="아이디를 입력하세요"
               required
             />
           </div>
@@ -37,6 +56,8 @@ const LoginPage = () => {
             <label className="block mb-1 text-sm font-medium text-gray-600">비밀번호</label>
             <input
               type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="비밀번호를 입력하세요"
               required
@@ -51,7 +72,10 @@ const LoginPage = () => {
         </form>
 
         <p className="mt-4 text-sm text-center text-gray-600">
-          계정이 없으신가요? <Link to="/signup" className="text-blue-500 hover:underline">회원가입</Link>
+          계정이 없으신가요?{" "}
+          <Link to="/signup" className="text-blue-500 hover:underline">
+            회원가입
+          </Link>
         </p>
       </div>
     </div>

@@ -1,18 +1,35 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const navigate = useNavigate();
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");  // ✅ 이메일 → username
   const [password, setPassword] = useState("");
 
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
 
-    // 실제 회원가입 처리 로직은 생략
-    alert("회원가입이 완료되었습니다!");
-    navigate("/");
+    try {
+      const res = await fetch("http://127.0.0.1:5000/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("✅ " + data.message);
+        navigate("/");
+      } else {
+        alert("❌ " + (data.error || "회원가입 실패"));
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      alert("❌ 서버 오류");
+    }
   };
 
   return (
@@ -22,26 +39,14 @@ const SignupPage = () => {
 
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-600">이름</label>
+            <label className="block mb-1 text-sm font-medium text-gray-600">아이디</label>
             <input
               type="text"
               required
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-              placeholder="이름 입력"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-1 text-sm font-medium text-gray-600">이메일</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-green-400"
-              placeholder="이메일 입력"
+              placeholder="아이디 입력"
             />
           </div>
 
@@ -64,13 +69,6 @@ const SignupPage = () => {
             회원가입
           </button>
         </form>
-
-        <p className="mt-4 text-sm text-center text-gray-600">
-          이미 계정이 있으신가요?{" "}
-          <Link to="/" className="text-green-500 hover:underline">
-            로그인
-          </Link>
-        </p>
       </div>
     </div>
   );
