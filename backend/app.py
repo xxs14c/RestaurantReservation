@@ -11,7 +11,7 @@ login_manager = LoginManager()
 # 애플리케이션 팩토리 함수
 def create_app():
     app = Flask(__name__)
-    CORS(app)
+    CORS(app, supports_credentials=True)
     app.secret_key = 'supersecret'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
