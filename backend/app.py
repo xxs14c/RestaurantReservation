@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_cors import CORS
 
 # db 객체는 애플리케이션 팩토리 함수 안에서 초기화
 db = SQLAlchemy()
@@ -10,6 +11,7 @@ login_manager = LoginManager()
 # 애플리케이션 팩토리 함수
 def create_app():
     app = Flask(__name__)
+    CORS(app)
     app.secret_key = 'supersecret'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -46,6 +48,7 @@ def create_app():
     with app.app_context():
         db.create_all()  # DB와 테이블 생성
         init_tables()    # 테이블 초기화
+        
 
     # 블루프린트 등록
     from routes.auth import auth_bp

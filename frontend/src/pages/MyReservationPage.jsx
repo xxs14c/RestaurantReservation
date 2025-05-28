@@ -35,7 +35,6 @@ const MyReservationsPage = () => {
     return (resDate - now) / (1000 * 60 * 60 * 24) >= 1;
   };
 
-  // ✅ 예약 취소 처리
   const handleCancel = async (id) => {
     if (!window.confirm("정말 예약을 취소하시겠습니까?")) return;
 
@@ -45,7 +44,7 @@ const MyReservationsPage = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // 🔐 세션 인증 필요
+        credentials: "include",
         body: JSON.stringify({ reservation_id: id }),
       });
 
