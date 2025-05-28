@@ -14,13 +14,13 @@ def create_app():
     CORS(app, supports_credentials=True)
     
     app.config.update(
-        SECRET_KEY='supersecret',
-        SQLALCHEMY_DATABASE_URI='sqlite:///db.sqlite3',
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SESSION_COOKIE_SAMESITE="None",
-        SESSION_COOKIE_SECURE=False,
-        SESSION_COOKIE_HTTPONLY=True,
-    )
+    SECRET_KEY='supersecret',
+    SQLALCHEMY_DATABASE_URI='sqlite:///db.sqlite3',
+    SQLALCHEMY_TRACK_MODIFICATIONS=False,
+    SESSION_COOKIE_SAMESITE="Lax",  # ✅ Lax로 바꾸기
+    SESSION_COOKIE_SECURE=False,   # ✅ 로컬에서 HTTP일 때 False 유지
+    SESSION_COOKIE_HTTPONLY=True,
+)
     # db와 login_manager 초기화
     db.init_app(app)
     login_manager.init_app(app)
