@@ -50,7 +50,7 @@ const ReservationForm = () => {
     }
   } catch (err) {
     console.error("예약 실패:", err);
-    alert("❌ 서버 오류");
+  alert("❌ 서버 오류: " + err.message);
   }
 };
 
