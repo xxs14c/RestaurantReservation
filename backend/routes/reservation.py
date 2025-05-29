@@ -2,6 +2,7 @@ from flask import Blueprint, request
 from flask_login import login_required, current_user
 from models import db, Table, Reservation
 from datetime import datetime, timedelta
+from flask import jsonify
 
 reservation_bp = Blueprint('reservation', __name__, url_prefix="/reservation")
 
@@ -73,20 +74,19 @@ def reserve():
     db.session.commit()
     return {"message": "예약 완료", "reservation_id": reservation.id}
 
-# 자신의 예약 목록 조회
+# 나의 예약 목록 조회
 @reservation_bp.route('/my_reservations')
 @login_required
 def my_reservations():
     reservations = Reservation.query.filter_by(user_id=current_user.id).all()
-    return [
-        {
-            "id": res.id,
-            "table": res.table.location,
-            "date": res.date,
-            "time_slot": res.time_slot,
-            "guest_count": res.guest_count
-        } for res in reservations
-    ]
+    result = [{
+        "id": res.id,
+        "table": res.table.location,
+        "date": res.date.isoformat(),  # 날짜 객체는 isoformat으로 문자열 변환 필요
+        "time_slot": res.time_slot,
+        "guest_count": res.guest_count
+    } for res in reservations]
+    return jsonify(result)
     
 
 # 예약 취소 
