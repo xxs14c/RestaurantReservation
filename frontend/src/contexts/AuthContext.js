@@ -1,20 +1,49 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null); // 필요 시 이름 등 저장
+  const [user, setUser] = useState(null);
 
+  // ✅ 로그인
   const login = (userInfo) => {
     setIsLoggedIn(true);
     setUser(userInfo);
   };
 
-  const logout = () => {
+  // ✅ 로그아웃
+  const logout = async () => {
+    await fetch("http://127.0.0.1:5000/auth/logout", {
+      credentials: "include",
+    });
     setIsLoggedIn(false);
     setUser(null);
   };
+
+  // ✅ 로그인 상태 확인
+  const checkLoginStatus = async () => {
+    try {
+      const res = await fetch("http://127.0.0.1:5000/auth/me", {
+        credentials: "include",
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        login(data.user); // 로그인 상태로 전환
+      } else {
+        setIsLoggedIn(false);
+        setUser(null);
+      }
+    } catch (err) {
+      console.error("로그인 상태 확인 실패:", err);
+    }
+  };
+
+  // ✅ 앱이 처음 실행될 때 자동 로그인 확인
+  useEffect(() => {
+    checkLoginStatus();
+  }, []);
 
   return (
     <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>

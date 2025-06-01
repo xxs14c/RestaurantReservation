@@ -11,14 +11,16 @@ login_manager = LoginManager()
 # 애플리케이션 팩토리 함수
 def create_app():
     app = Flask(__name__)
-    CORS(app, supports_credentials=True)
+    CORS(app,
+     supports_credentials=True,
+     resources={r"/*": {"origins": ["http://localhost:3000", "http://127.0.0.1:3000"]}})
     
     app.config.update(
     SECRET_KEY='supersecret',
     SQLALCHEMY_DATABASE_URI='sqlite:///db.sqlite3',
     SQLALCHEMY_TRACK_MODIFICATIONS=False,
-    SESSION_COOKIE_SAMESITE="Lax",  # ✅ Lax로 바꾸기
-    SESSION_COOKIE_SECURE=False,   # ✅ 로컬에서 HTTP일 때 False 유지
+    SESSION_COOKIE_SAMESITE="Lax",
+    SESSION_COOKIE_SECURE=False,
     SESSION_COOKIE_HTTPONLY=True,
 )
     # db와 login_manager 초기화

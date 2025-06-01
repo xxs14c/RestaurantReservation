@@ -6,27 +6,43 @@ const MyReservationsPage = () => {
   const [reservations, setReservations] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // ✅ 예약 데이터 불러오기
+  // ✅ 예약 목록 불러오기
   useEffect(() => {
     const fetchReservations = async () => {
       try {
-        const res = await fetch("http://127.0.0.1:5000/reservation/my_reservations", {
+        const res = await fetch("http://localhost:5000/reservation/my_reservations", {
           method: "GET",
-          credentials: "include", // 🔐 세션 로그인 상태 유지
+          credentials: "include",
         });
 
-        const data = await res.json();
-        setReservations(data);
+        const contentType = res.headers.get("Content-Type");
+        let data;
+
+        if (res.ok && contentType && contentType.includes("application/json")) {
+          data = await res.json();
+          setReservations(data);
+        } else {
+          const text = await res.text();
+          console.error("예약 목록 실패:", text);
+          alert("❌ 예약 목록 불러오기 실패\n" + text);
+        }
       } catch (error) {
-        console.error("예약 목록 불러오기 실패:", error);
-        alert("예약 데이터를 불러오지 못했습니다.");
+        console.error("예약 목록 요청 실패:", error);
+        alert("서버 오류로 예약 데이터를 불러오지 못했습니다.");
       }
     };
 
     fetchReservations();
   }, []);
 
-  const formattedSelectedDate = selectedDate.toISOString().split("T")[0];
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const formattedSelectedDate = formatDate(selectedDate);
   const filteredReservations = reservations.filter((r) => r.date === formattedSelectedDate);
 
   const canCancel = (reservationDate) => {
@@ -39,7 +55,7 @@ const MyReservationsPage = () => {
     if (!window.confirm("정말 예약을 취소하시겠습니까?")) return;
 
     try {
-      const res = await fetch("http://127.0.0.1:5000/reservation/cancel", {
+      const res = await fetch("http://localhost:5000/reservation/cancel", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,13 +64,21 @@ const MyReservationsPage = () => {
         body: JSON.stringify({ reservation_id: id }),
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get("Content-Type");
+      let data;
+
+      if (contentType && contentType.includes("application/json")) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        throw new Error("JSON 응답이 아닙니다: " + text);
+      }
 
       if (res.ok) {
         setReservations((prev) => prev.filter((r) => r.id !== id));
         alert(data.message || "예약이 취소되었습니다.");
       } else {
-        alert(data.error || "취소 실패");
+        alert(data.error || "예약 취소 실패");
       }
     } catch (error) {
       console.error("예약 취소 실패:", error);
@@ -76,7 +100,7 @@ const MyReservationsPage = () => {
         />
       </div>
 
-      {filteredReservations.length === 0 ? (
+      {reservations.length > 0 && filteredReservations.length === 0 ? (
         <p className="text-gray-600">해당 날짜에 예약 내역이 없습니다.</p>
       ) : (
         <div className="space-y-4">

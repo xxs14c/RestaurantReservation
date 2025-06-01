@@ -10,31 +10,40 @@ const LoginPage = () => {
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const res = await fetch("http://127.0.0.1:5000/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({ username, password }),
-      });
+  try {
+    const res = await fetch("http://localhost:5000/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({ username, password }),
+    });
 
-      const data = await res.json();
+    const contentType = res.headers.get("content-type");
 
-      if (res.ok) {
-        login({ name: username });
-        navigate("/home");
-      } else {
+    if (!res.ok) {
+      if (contentType && contentType.includes("application/json")) {
+        const data = await res.json();
         alert("❌ " + (data.error || "로그인 실패"));
+      } else {
+        alert("❌ 서버 응답 오류 (HTML)");
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      alert("❌ 서버 오류 발생");
+      return;
     }
-  };
+
+    const data = await res.json();
+    login({ name: username });
+    navigate("/home");
+
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("❌ 서버 오류 발생");
+  }
+};
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
