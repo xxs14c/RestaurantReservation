@@ -1,5 +1,3 @@
-// src/pages/ReservationForm.jsx
-
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -7,10 +5,10 @@ const ReservationForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // HomePage에서 navigate할 때 보낸 state를 구조분해 할당
+  // HomePage에서 navigate 시 전달한 state를 구조 분해
   const { table, date, time } = location.state || {};
 
-  // 만약 table 정보가 없으면 잘못된 접근 문구를 보여줌
+  // 잘못된 접근( state가 없으면 ) 경고
   if (!table || !date || !time) {
     return (
       <div className="text-center mt-10 text-red-600 font-semibold">
@@ -22,19 +20,19 @@ const ReservationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 폼 필드에서 입력된 값만 가져오면, date/time은 이미 URL state로 확보됨
+    // 폼 데이터만 가져옴
     const formData = new FormData(e.target);
+
     const reservation = {
-      // 이름, 전화번호, 카드번호, 인원 수
       name: formData.get("name"),
       phone: formData.get("phone"),
       credit_card: formData.get("credit_card"),
       guest_count: Number(formData.get("guest_count")),
 
-      // HomePage에서 넘겨준 table, date, time 사용
+      // HomePage에서 전달된 정보
       table_id: table.id,
       date: date,       // "YYYY-MM-DD"
-      time_slot: time,  // "lunch" or "dinner"
+      time_slot: time,  // "lunch" 또는 "dinner"
     };
 
     try {
@@ -43,7 +41,7 @@ const ReservationForm = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // 세션 인증 쿠키 포함
+        credentials: "include", // 세션 쿠키 포함
         body: JSON.stringify(reservation),
       });
 
@@ -72,8 +70,10 @@ const ReservationForm = () => {
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded shadow">
       <h2 className="text-2xl font-bold mb-4">예약 정보 입력</h2>
 
-      {/* HomePage에서 전달된 date/time과 table 정보를 화면에 보여줌 */}
-      <p className="mb-2"><strong>예약 날짜:</strong> {date}</p>
+      {/* HomePage에서 전달된 date, time, table 정보 표시 */}
+      <p className="mb-2">
+        <strong>예약 날짜:</strong> {date}
+      </p>
       <p className="mb-2">
         <strong>시간대:</strong> {time === "lunch" ? "점심" : "저녁"}
       </p>

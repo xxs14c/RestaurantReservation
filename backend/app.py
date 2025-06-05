@@ -38,18 +38,26 @@ def create_app():
     # 테이블 초기화 함수
     def init_tables():
         with app.app_context():
-            # 테이블이 하나도 없으면 기본 테이블을 추가
+            # 테이블이 한 번도 생성되지 않았다면—최초 1회만 실행
             if Table.query.count() == 0:
                 print("🌟 테이블 초기화 중...")
+
                 table_data = []
-                for capacity in [2, 4, 6, 8]:
-                    table_data.append(Table(location="창문", capacity=capacity))
-                    table_data.append(Table(location="내부", capacity=capacity))
-                    table_data.append(Table(location="방", capacity=capacity))
+                # 우리가 정의하고 싶은 위치들 (프론트 mockTables와 동일하게)
+                locations = ["창가", "룸", "내부", "방"]
+                # 우리가 지원하고 싶은 용량들
+                capacities = [2, 4, 6, 8]
+
+                # capacity마다 location 리스트를 순회하면서 Table 인스턴스를 생성
+                for cap in capacities:
+                    for loc in locations:
+                        table_data.append(Table(location=loc, capacity=cap))
+                    # → 이렇게 하면 capacity 2짜리 테이블 4개(창가/룸/내부/방),
+                    #    capacity 4짜리 테이블 4개, 6짜리 테이블 4개, 8짜리 테이블 4개 총 16개가 생성됨
 
                 db.session.add_all(table_data)
                 db.session.commit()
-                print("✅ 기본 테이블 12개 생성 완료!")
+                print("✅ 기본 테이블 16개(용량2,4,6,8 각 위치별) 생성 완료!")
 
     # DB 생성 및 테이블 초기화
     with app.app_context():
