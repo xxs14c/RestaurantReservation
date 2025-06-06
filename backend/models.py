@@ -8,7 +8,7 @@ class User(UserMixin, db.Model):
 
 class Table(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    location = db.Column(db.String(50))  
+    location = db.Column(db.String(50))
     capacity = db.Column(db.Integer)
 
 class Reservation(db.Model):
@@ -21,6 +21,6 @@ class Reservation(db.Model):
     guest_count = db.Column(db.Integer)
     date = db.Column(db.Date)
     time_slot = db.Column(db.String(10))
-    
+
     user = db.relationship('User', backref='reservations')
     table = db.relationship('Table', backref='reservations')

@@ -3,47 +3,38 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 
 const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, isLoggedIn } = useAuth();
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState(""); // ✅ 이메일 → username
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = async (e) => {
-  e.preventDefault();
-
-  try {
-    const res = await fetch("http://localhost:5000/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({ username, password }),
-    });
-
-    const contentType = res.headers.get("content-type");
-
-    if (!res.ok) {
-      if (contentType && contentType.includes("application/json")) {
-        const data = await res.json();
-        alert("❌ " + (data.error || "로그인 실패"));
-      } else {
-        alert("❌ 서버 응답 오류 (HTML)");
-      }
-      return;
-    }
-
-    const data = await res.json();
-    login({ name: username });
-    navigate("/home");
-
-  } catch (err) {
-    console.error("Login error:", err);
-    alert("❌ 서버 오류 발생");
+  if (isLoggedIn) {
+    navigate("/home", { replace: true });
   }
-};
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:5000/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        login(data.user);
+        navigate("/home");
+      } else {
+        alert("❌ 로그인 실패: " + (data.error || "알 수 없는 오류"));
+      }
+    } catch (err) {
+      alert("❌ 서버 오류 발생");
+    }
+  };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 
 reservation_bp = Blueprint('reservation', __name__, url_prefix="/reservation")
 
-# ✅ 예약 가능한 테이블 조회
 @reservation_bp.route('/tables')
 @login_required
 def list_tables():
@@ -31,7 +30,6 @@ def list_tables():
 
     return jsonify({"available_tables": tables_info})
 
-# ✅ 예약 요청
 @reservation_bp.route('/reserve', methods=['POST'])
 @login_required
 def reserve():
@@ -67,7 +65,6 @@ def reserve():
 
     return jsonify({"message": "예약 완료", "reservation_id": reservation.id})
 
-# ✅ 나의 예약 목록 조회
 @reservation_bp.route('/my_reservations')
 @login_required
 def my_reservations():
@@ -81,7 +78,6 @@ def my_reservations():
     } for res in reservations]
     return jsonify(result)
 
-# ✅ 예약 취소
 @reservation_bp.route('/cancel', methods=['POST'])
 @login_required
 def cancel_reservation():
