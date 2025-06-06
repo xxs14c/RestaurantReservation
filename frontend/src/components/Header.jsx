@@ -13,7 +13,7 @@ const Header = () => {
   return (
     <header className="bg-gray-800 text-white px-6 py-4 flex justify-between items-center">
       <h1 className="text-xl font-bold">
-        <Link to="/">나의 레스토랑</Link>
+        <Link to="/">레스토랑 예약 시스템</Link>
       </h1>
       {isLoggedIn && user ? (
         <div className="flex items-center space-x-4">
